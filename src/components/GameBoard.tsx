@@ -550,11 +550,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
 
     if (typeof window === 'undefined') {
-      return true;
+      return false;
     }
 
     const rawValue = window.localStorage.getItem(RESERVE_VISIBILITY_STORAGE_KEY);
-    return rawValue === null ? true : rawValue === '1';
+    return rawValue === null ? false : rawValue === '1';
   });
   const [clockNow, setClockNow] = useState(() => hasMatchingRestoredSession ? (restoredSession.finishedAt ?? restoredSession.pausedAt ?? Date.now()) : Date.now());
   const [gameResults, setGameResults] = useState<GameResultEntry[]>(() => loadStoredGameResults());
@@ -2290,6 +2290,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <div className="game-section-head">
               <div className="game-board-head">
                 <h3>Поле</h3>
+                <div className="game-board-mobile-piece" aria-label="Активная фигура">
+                  <div className="game-board-mobile-piece-copy">
+                    <span className="game-board-mobile-piece-label">Активная фигура</span>
+                    <strong className={!activePiece ? 'is-placeholder' : ''}>
+                      {activePiece ? pieceLabel(activePiece) : 'Ожидание фигуры'}
+                    </strong>
+                  </div>
+                  <div
+                    className={`game-board-mobile-piece-chip ${
+                      activePiece && phase === 'placePiece' && (!isAiMode || turnPlayer === 1) ? 'is-draggable' : ''
+                    } ${!activePiece ? 'is-empty' : ''}`}
+                  >
+                    {activePiece ? (
+                      <PieceComponent piece={activePiece} size="small" variant={playerProfile.pieceSet} />
+                    ) : (
+                      <span className="game-active-plus">+</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             <div className={`game-board-surface ${isAiThinking ? 'is-waiting' : ''}`}>

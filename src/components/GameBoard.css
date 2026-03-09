@@ -613,6 +613,59 @@
   gap: 4px;
 }
 
+.game-board-mobile-piece {
+  display: none;
+}
+
+.game-board-mobile-piece-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.game-board-mobile-piece-label {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #bca87b;
+}
+
+.game-board-mobile-piece-copy strong {
+  font-size: 12px;
+  line-height: 1.15;
+  color: #fff0ca;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-board-mobile-piece-copy strong.is-placeholder {
+  color: #a89a7c;
+}
+
+.game-board-mobile-piece-chip {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  border: 1px solid rgb(240 199 102 / 0.18);
+  background: rgb(255 255 255 / 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-board-mobile-piece-chip .piece-component {
+  transform: scale(1.34);
+}
+
+.game-board-mobile-piece-chip.is-empty {
+  border-style: dashed;
+  border-color: rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.02);
+}
+
 .game-section-meta {
   display: inline-flex;
   align-items: center;
@@ -2239,7 +2292,7 @@
   }
 
   .game-status-actions {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 
@@ -2251,28 +2304,37 @@
   }
 
   .game-active-piece {
-    width: auto;
-    align-items: center;
-    justify-self: end;
+    display: none;
   }
 
-  .game-active-chip {
-    width: 72px;
-    height: 72px;
+  .game-board-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .game-board-mobile-piece {
+    min-width: 0;
+    max-width: 56%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .game-board-mobile-piece-copy {
+    text-align: right;
+  }
+
+  .game-board-mobile-piece-chip {
+    width: 64px;
+    height: 64px;
     border-radius: 18px;
   }
 
-  .game-active-chip .piece-component {
+  .game-board-mobile-piece-chip .piece-component {
     transform: scale(1.48);
-  }
-
-  .game-active-chip.is-empty {
-    width: 58px;
-    height: 58px;
-  }
-
-  .game-active-piece p {
-    display: none;
   }
 
   .game-section-title {
@@ -2479,7 +2541,7 @@
 
   .game-status-actions {
     width: 100%;
-    grid-template-columns: minmax(0, 1fr) 72px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     align-items: start;
   }
@@ -2516,29 +2578,32 @@
     text-overflow: ellipsis;
   }
 
-  .game-active-piece {
-    min-width: 0;
-    width: 72px;
-    justify-self: end;
+  .game-board-head {
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .game-active-chip {
-    width: 68px;
-    height: 68px;
+  .game-board-mobile-piece {
+    max-width: 60%;
+    gap: 6px;
+  }
+
+  .game-board-mobile-piece-label {
+    font-size: 9px;
+  }
+
+  .game-board-mobile-piece-copy strong {
+    font-size: 11px;
+  }
+
+  .game-board-mobile-piece-chip {
+    width: 58px;
+    height: 58px;
     border-radius: 16px;
   }
 
-  .game-active-chip .piece-component {
+  .game-board-mobile-piece-chip .piece-component {
     transform: scale(1.36);
-  }
-
-  .game-active-chip.is-empty {
-    width: 54px;
-    height: 54px;
-  }
-
-  .game-active-plus {
-    font-size: 28px;
   }
 
   .game-section-head-reserve {
