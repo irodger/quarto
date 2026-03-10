@@ -1,73 +1,157 @@
-# React + TypeScript + Vite
+# Quarto Royale
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Quarto Royale — браузерная версия **Quarto** с атмосферным интерфейсом, игрой против ИИ, обучением, локальным профилем, сохранением партии и публикацией через GitHub Pages.
 
-Currently, two official plugins are available:
+Онлайн-версия: [https://irodger.github.io/quarto/](https://irodger.github.io/quarto/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Что это за игра
 
-## React Compiler
+Quarto — абстрактная стратегическая игра для двух игроков на поле `4x4` с набором из `16` уникальных фигур.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+У каждой фигуры есть четыре бинарных свойства:
 
-## Expanding the ESLint configuration
+- светлая / темная
+- маленькая / большая
+- круглая / квадратная
+- полая / сплошная
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Игрок не выбирает фигуру для себя сам. Каждый ход состоит из двух фаз:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Поставить фигуру, которую передал соперник.
+2. Выбрать следующую фигуру для соперника.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Победа засчитывается, если на поле собрана линия из четырех фигур с хотя бы одним общим признаком.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+В проекте также есть расширенный режим правил, в котором победным считается не только ряд, но и квадрат `2x2`.
+
+## Возможности
+
+- Несколько режимов игры:
+  - обучение
+  - человек против ИИ
+  - локальная игра на двоих
+  - быстрая игра с таймером хода
+- Несколько уровней сложности ИИ:
+  - easy
+  - medium
+  - hard
+  - обучаемый ИИ, который запоминает партии игрока
+- Два набора правил:
+  - классика
+  - хардкор
+- Адаптивный интерфейс для мобильных экранов
+- Сохранение текущей партии в браузере
+- Профиль игрока:
+  - имя
+  - аватар
+  - выбор набора фигур
+  - статистика
+  - история последних партий
+- Боковая панель с:
+  - меню партии
+  - логом текущей партии
+  - профилем
+  - историей результатов
+- Подсветка победной комбинации и объяснение победного признака
+- Анимации фигур, резерва и действий на поле
+- Готовый скрипт деплоя в GitHub Pages
+
+## Наборы фигур
+
+В игре есть два визуальных набора фигур:
+
+- `Модерн` — используется по умолчанию
+- `Классика`
+
+Выбранный набор сохраняется в профиле игрока и повторно используется при следующем запуске.
+
+## Что сохраняется в браузере
+
+Приложение хранит локально:
+
+- текущую игровую сессию
+- состояние резерва, сортировки и фильтров
+- профиль игрока
+- историю партий
+- данные обучаемого ИИ
+
+Благодаря этому можно перезагрузить страницу и продолжить незавершенную партию.
+
+## Локальный запуск
+
+Требования:
+
+- Node.js
+- npm
+
+Установка зависимостей:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Запуск dev-сервера:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Сборка production-версии:
+
+```bash
+npm run build
+```
+
+Локальный просмотр production-сборки:
+
+```bash
+npm run preview
+```
+
+Проверка линтером:
+
+```bash
+npm run lint
+```
+
+## GitHub Pages
+
+Проект опубликован по адресу:
+
+- [https://irodger.github.io/quarto/](https://irodger.github.io/quarto/)
+
+Сборка версии для GitHub Pages:
+
+```bash
+npm run build:pages
+```
+
+Публикация в ветку `gh-pages`:
+
+```bash
+npm run deploy:pages
+```
+
+Скрипт публикации:
+
+- собирает приложение
+- создает `404.html`
+- добавляет `.nojekyll`
+- публикует содержимое `dist` в `gh-pages`
+
+## Технологии
+
+- React
+- TypeScript
+- Vite
+- CSS
+
+## Статус проекта
+
+Проект активно развивается. Продолжают дорабатываться:
+
+- UX и UI игрового экрана
+- мобильная версия
+- логика и поведение ИИ
+- обучение
+- профиль и история партий

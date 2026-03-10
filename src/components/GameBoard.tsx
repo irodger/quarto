@@ -1,6 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './GameBoard.css';
 import { PieceComponent } from './PieceComponent';
+import { GameTopbar } from './game-board/GameTopbar';
+import { ReservePanel } from './game-board/ReservePanel';
+import {
+  HeaderClockIcon,
+  HeaderDifficultyIcon,
+  HeaderModeIcon,
+  HeaderPiecesIcon,
+  HeaderRulesClassicIcon,
+  HeaderRulesHardcoreIcon,
+} from './game-board/HeaderIcons';
 import type { Piece } from '../types';
 import type { GameSettings } from '../types/game';
 import {
@@ -72,6 +82,20 @@ type AiLearningProfile = {
   playerWinPatterns: AttributeCounters;
   playerPlacements: number[][];
 };
+
+const RobotAvatar = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-robot-avatar">
+    <rect x="6.5" y="7" width="11" height="10" rx="2.6" />
+    <path d="M12 4.5v2.5" />
+    <path d="M4.5 10.5h2" />
+    <path d="M17.5 10.5h2" />
+    <path d="M9.2 18.5v1.8" />
+    <path d="M14.8 18.5v1.8" />
+    <circle cx="10" cy="11.3" r="1.15" />
+    <circle cx="14" cy="11.3" r="1.15" />
+    <path d="M9.5 14.4h5" />
+  </svg>
+);
 
 const createEmptyAttributeCounters = (): AttributeCounters => ({
   color: { light: 0, dark: 0 },
@@ -213,7 +237,7 @@ const loadStoredPlayerProfile = (): PlayerProfile => {
       return {
         name: 'Игрок',
         avatarBase64: null,
-        pieceSet: 'classic',
+        pieceSet: 'modern',
       };
     }
 
@@ -221,13 +245,13 @@ const loadStoredPlayerProfile = (): PlayerProfile => {
     return {
       name: typeof parsed.name === 'string' && parsed.name.trim() ? parsed.name.trim() : 'Игрок',
       avatarBase64: typeof parsed.avatarBase64 === 'string' ? parsed.avatarBase64 : null,
-      pieceSet: parsed.pieceSet === 'modern' ? 'modern' : 'classic',
+      pieceSet: parsed.pieceSet === 'classic' ? 'classic' : 'modern',
     };
   } catch {
     return {
       name: 'Игрок',
       avatarBase64: null,
-      pieceSet: 'classic',
+      pieceSet: 'modern',
     };
   }
 };
@@ -323,7 +347,7 @@ const reserveFilterMeta = {
   color: {
     label: 'Цвет',
     states: {
-      all: 'Любой цвет',
+      all: 'Любой',
       light: 'Светлые',
       dark: 'Темные',
     },
@@ -331,7 +355,7 @@ const reserveFilterMeta = {
   size: {
     label: 'Размер',
     states: {
-      all: 'Любой размер',
+      all: 'Любой',
       small: 'Маленькие',
       large: 'Большие',
     },
@@ -339,7 +363,7 @@ const reserveFilterMeta = {
   shape: {
     label: 'Форма',
     states: {
-      all: 'Любая форма',
+      all: 'Любая',
       round: 'Круглые',
       square: 'Квадратные',
     },
@@ -347,7 +371,7 @@ const reserveFilterMeta = {
   top: {
     label: 'Пустота',
     states: {
-      all: 'Любой верх',
+      all: 'Любая',
       hollow: 'Полые',
       solid: 'Сплошные',
     },
@@ -418,72 +442,6 @@ const parseDurationLabelToSeconds = (value: string) => {
 
   return Number(match[1]) * 60 + Number(match[2]);
 };
-
-const HeaderModeIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon">
-    <path d="M7 7h10v10H7z" />
-    <path d="M12 4v3M12 17v3M4 12h3M17 12h3" />
-  </svg>
-);
-
-const HeaderDifficultyBarsIcon = ({ level, color }: { level: 1 | 2 | 3; color: string }) => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon game-difficulty-icon">
-    <rect x="4" y="6" width="4" height="12" rx="2" fill={level >= 1 ? color : 'rgb(255 255 255 / 0.12)'} />
-    <rect x="10" y="4" width="4" height="14" rx="2" fill={level >= 2 ? color : 'rgb(255 255 255 / 0.12)'} />
-    <rect x="16" y="2" width="4" height="16" rx="2" fill={level >= 3 ? color : 'rgb(255 255 255 / 0.12)'} />
-  </svg>
-);
-
-const HeaderDifficultyBrainIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon game-difficulty-icon">
-    <path
-      d="M9 5.5a3 3 0 0 1 5.4-1.8A3.4 3.4 0 0 1 19 7a3.2 3.2 0 0 1-1.4 2.6A3.4 3.4 0 0 1 18 11a3.5 3.5 0 0 1-3.5 3.5H10A4 4 0 0 1 6 10.5c0-.5.1-1 .3-1.4A3.2 3.2 0 0 1 5 6.5A3.5 3.5 0 0 1 9 5.5Z"
-      fill="#8b5cf6"
-    />
-    <path d="M10 7.5c-1 0-1.8.8-1.8 1.8M13.2 6.8c.8 0 1.5.6 1.5 1.4M11.3 10v4M8.8 10.6h5.7" stroke="#efe7ff" strokeWidth="1.3" strokeLinecap="round" />
-  </svg>
-);
-
-const HeaderDifficultyIcon = ({ difficulty }: { difficulty: GameSettings['aiDifficulty'] }) => {
-  if (difficulty === 'easy') {
-    return <HeaderDifficultyBarsIcon level={1} color="#34d399" />;
-  }
-
-  if (difficulty === 'medium') {
-    return <HeaderDifficultyBarsIcon level={2} color="#60a5fa" />;
-  }
-
-  if (difficulty === 'hard') {
-    return <HeaderDifficultyBarsIcon level={3} color="#f87171" />;
-  }
-
-  return <HeaderDifficultyBrainIcon />;
-};
-
-const HeaderRulesClassicIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon">
-    <path d="M5 5l14 14M19 5L5 19M5 12h14M12 5v14" />
-  </svg>
-);
-
-const HeaderRulesHardcoreIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon">
-    <path d="M5 5h6v6H5zM13 5h6v6h-6zM5 13h6v6H5zM13 13h6v6h-6z" />
-  </svg>
-);
-
-const HeaderClockIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon">
-    <circle cx="12" cy="12" r="7" />
-    <path d="M12 8v4l3 2" />
-  </svg>
-);
-
-const HeaderPiecesIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className="game-chip-icon">
-    <path d="M6 8.5h5.5V14H6zM12.5 10h5.5v5.5h-5.5zM7.5 15h5.5v3.5H7.5z" />
-  </svg>
-);
 
 const formatFinishedAt = (timestamp: number) =>
   new Intl.DateTimeFormat('ru-RU', {
@@ -570,6 +528,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   const [isAvatarProcessing, setIsAvatarProcessing] = useState(false);
   const idleTimerRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(hasMatchingRestoredSession ? restoredSession.startedAt : initialGameState.startedAt);
+  const reservePanelRef = useRef<HTMLElement | null>(null);
+  const boardPanelRef = useRef<HTMLElement | null>(null);
   const playerDisplayName = playerProfile.name.trim() || 'Игрок';
   const isRoundStarted = startedAt !== null;
   const addLog = useCallback((entry: string) => {
@@ -782,6 +742,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     winner,
     winningPattern,
   ]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.innerWidth > 720 || phase === 'gameOver') {
+      return;
+    }
+
+    if (isAiMode && turnPlayer === 2) {
+      return;
+    }
+
+    const target = phase === 'selectPiece' ? reservePanelRef.current : boardPanelRef.current;
+    if (!target) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [activePiece, isAiMode, phase, turnPlayer]);
 
   const updateSettings = useCallback((patch: Partial<GameSettings>) => {
     onUpdateGameSettings({
@@ -1257,137 +1238,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     return () => window.clearTimeout(timer);
   }, [addLog, board, finishGame, isQuickMode, pausedAt, phase, playerDisplayName, turnPlayer, turnStartedAt]);
 
-  const statusTitle = (() => {
-    if (isTutorialMode && phase !== 'gameOver') {
-      return tutorialStep === 'pickPieceForAi'
-        ? 'Шаг 1. Выберите фигуру для ИИ'
-        : 'Шаг 2. Поставьте победную фигуру';
-    }
-
-    if (phase === 'gameOver') {
-      if (winner === null) {
-        return 'Ничья';
-      }
-
-      if (winner === 1) {
-        return 'Вы победили';
-      }
-
-      return isAiMode ? 'Крупье ИИ победил' : `Игрок ${winner} победил`;
-    }
-
-    if (isAiMode && turnPlayer === 1) {
-      return phase === 'selectPiece'
-        ? isQuickMode
-          ? 'Быстрый ход: выберите фигуру для ИИ'
-          : 'Вы выбираете фигуру для ИИ'
-        : isQuickMode
-          ? 'Быстрый ход: поставьте фигуру на стол'
-          : 'Поставьте фигуру на стол';
-    }
-
-    if (isAiMode && turnPlayer === 2) {
-      return phase === 'selectPiece'
-        ? isQuickMode
-          ? 'Крупье ИИ выбирает фигуру для вас'
-          : 'Крупье ИИ выбирает фигуру для вас'
-        : isQuickMode
-          ? 'Крупье ИИ быстро ставит фигуру на стол'
-          : 'Крупье ИИ ставит фигуру на стол';
-    }
-
-    const actorName = playerName(turnPlayer, isAiMode, playerDisplayName);
-    return phase === 'selectPiece'
-      ? `${actorName} выбирает фигуру сопернику`
-      : `${actorName} ставит фигуру на стол`;
-  })();
-
-  const statusHint = (() => {
-    if (isTutorialMode && phase !== 'gameOver') {
-      return tutorialStep === 'pickPieceForAi'
-        ? 'Сначала выберите подсвеченную фигуру в резерве. ИИ сразу сделает ответный ход без ожидания.'
-        : 'Теперь поставьте переданную вам фигуру в клетку 1-4. Так вы соберете ряд из четырех больших фигур.';
-    }
-
-    if (phase === 'gameOver') {
-      return winner
-        ? winningPattern
-          ? 'Партия завершена. Новую партию можно начать из боковой панели.'
-          : 'Партия завершена по времени. Новую партию можно начать из боковой панели.'
-        : 'Никто не собрал выигрышную фигуру по активным правилам.';
-    }
-
-    if (isAiMode && turnPlayer === 2) {
-      return phase === 'selectPiece'
-        ? 'Крупье ИИ выбирает следующую фигуру для вас.'
-        : isQuickMode
-          ? 'Это ответ ИИ. Ваш таймер сейчас не идет.'
-          : 'Крупье ИИ думает над постановкой фигуры.';
-    }
-
-    if (phase === 'selectPiece') {
-      return isQuickMode
-        ? 'Выберите фигуру в резерве. Она перейдет ИИ, и на этот ход у вас есть 15 секунд.'
-        : 'Выберите фишку в резерве. Она перейдет следующему игроку.';
-    }
-
-    return activePiece
-      ? isQuickMode
-        ? 'Поставьте активную фигуру на свободную клетку за 15 секунд.'
-        : 'Поставьте активную фигуру на свободную клетку.'
-      : 'Ожидание активной фигуры.';
-  })();
-
-  const statusTone = (() => {
-    if (isTutorialMode && phase !== 'gameOver') {
-      return 'player-turn';
-    }
-
-    if (phase === 'gameOver') {
-      if (winner === null) {
-        return 'neutral';
-      }
-
-      return winner === 1 ? 'player-win' : 'opponent-win';
-    }
-
-    if (turnPlayer === 1) {
-      return 'player-turn';
-    }
-
-    return 'opponent-turn';
-  })();
-
-  const statusBadge = (() => {
-    if (isTutorialMode && phase !== 'gameOver') {
-      return tutorialStep === 'pickPieceForAi' ? 'Обучение: выбор' : 'Обучение: победный ход';
-    }
-
-    if (phase === 'gameOver') {
-      if (winner === null) {
-        return 'Ничья';
-      }
-
-      return winner === 1 ? 'Вы победили' : isAiMode ? 'Победил ИИ' : 'Победил соперник';
-    }
-
-    if (turnPlayer === 1) {
-      return 'Ваш ход';
-    }
-
-    return isAiMode ? 'Ход ИИ' : 'Ход соперника';
-  })();
-  const shouldPulseStatusTitle = isAiMode && turnPlayer === 1 && phase === 'selectPiece';
-  const participants = isAiMode
-    ? [
-      { id: 1 as const, label: playerDisplayName, icon: 'И' },
-      { id: 2 as const, label: 'Крупье', icon: 'К' },
-    ]
-    : [
-      { id: 1 as const, label: playerDisplayName, icon: '1' },
-      { id: 2 as const, label: 'Игрок 2', icon: '2' },
-    ];
-
   const modeChipLabel = isTutorialMode
     ? 'Обучение'
     : isAiMode
@@ -1488,9 +1338,55 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     return getSharedAttributes(board, winningPattern).map((attribute) => labels[attribute][firstPiece[attribute]]);
   }, [board, winningPattern]);
   const winningReasonTitle = winningAttributeLabels.length > 1 ? 'Победа по признакам' : 'Победа по признаку';
+  const mobileFocusZone = phase === 'gameOver'
+    ? null
+    : phase === 'selectPiece'
+      ? 'reserve'
+      : 'board';
   const boardTurnLabel = phase === 'gameOver'
     ? null
     : `Ходит ${turnPlayer === 1 ? playerDisplayName : isAiMode ? 'Крупье ИИ' : playerName(turnPlayer, false, playerDisplayName)}`;
+  const boardActionTitle = (() => {
+    if (phase === 'gameOver') {
+      return null;
+    }
+
+    if (phase === 'selectPiece') {
+      if (turnPlayer === 1) {
+        return isAiMode ? 'Выберите фигуру для ИИ' : 'Выберите фигуру для соперника';
+      }
+
+      return isAiMode ? 'Крупье выбирает фигуру для вас' : `${playerName(turnPlayer, false, playerDisplayName)} выбирает фигуру`;
+    }
+
+    if (turnPlayer === 1) {
+      return 'Поставьте фигуру на поле';
+    }
+
+    return isAiMode ? 'Крупье ставит фигуру на поле' : `${playerName(turnPlayer, false, playerDisplayName)} ставит фигуру`;
+  })();
+  const boardActionHint = (() => {
+    if (phase === 'gameOver') {
+      return null;
+    }
+
+    if (phase === 'selectPiece') {
+      return isAiMode && turnPlayer === 2
+        ? 'Следующая фигура уже выбирается для вас.'
+        : 'Сейчас важен выбор следующей фигуры.';
+    }
+
+    return activePiece ? pieceLabel(activePiece) : 'Ожидание активной фигуры';
+  })();
+  const actionParticipants = isAiMode
+    ? [
+      { id: 1 as const, label: playerDisplayName, icon: 'И' as const },
+      { id: 2 as const, label: 'Крупье', icon: 'robot' as const },
+    ]
+    : [
+      { id: 1 as const, label: playerDisplayName, icon: '1' as const },
+      { id: 2 as const, label: 'Игрок 2', icon: '2' as const },
+    ];
   const winnerOverlayTitle = winner
     ? winner === 1
       ? 'Вы победили'
@@ -1942,22 +1838,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   </div>
                   <div className="game-results-list">
                     {profileGameResults.length > 0 ? (
-                      profileGameResults.map((result) => (
-                        <div key={result.id} className="game-result-card">
-                          <div className="game-result-summary">{result.summary}</div>
-                          <div className="game-result-meta">{result.meta}</div>
-                          <div className="game-result-badges">
-                            <span className="game-result-badge is-accent">
-                              {result.rules}
-                            </span>
-                            {result.badges.map((badge) => (
-                              <span key={`${result.id}-${badge}`} className="game-result-badge">
-                                {badge}
+                      profileGameResults.map((result) => {
+                        const durationBadge = result.badges.find((badge) => badge.startsWith('Время '));
+                        const otherBadges = result.badges.filter((badge) => badge !== durationBadge);
+
+                        return (
+                          <div key={result.id} className="game-result-card">
+                            <div className="game-result-summary">{result.summary}</div>
+                            <div className="game-result-meta">{result.meta}</div>
+                            {durationBadge && (
+                              <div className="game-result-duration">
+                                <span className="game-result-duration-label">Длительность партии</span>
+                                <strong>{durationBadge.replace('Время ', '')}</strong>
+                              </div>
+                            )}
+                            <div className="game-result-badges">
+                              <span className="game-result-badge is-accent">
+                                {result.rules}
                               </span>
-                            ))}
+                              {otherBadges.map((badge) => (
+                                <span key={`${result.id}-${badge}`} className="game-result-badge">
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <div className="game-result-empty">Здесь появятся итоги партий с вашим участием.</div>
                     )}
@@ -1986,335 +1893,122 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   </div>
                 </div>
               )}
+              <div className="game-sidebar-footer">
+                <span className="game-sidebar-footer-label">Версия игры</span>
+                <strong>1.0.1</strong>
+              </div>
             </>
           )}
         </aside>
 
         <section className="game-shell">
-        <header className="game-topbar">
-          <div className="game-brand">
-            <p className="game-brand-inline">Стол № {tableNumber}</p>
-          </div>
-
-          <div className="game-title">
-            <div className="game-title-emblem">
-              <span className="game-title-emblem-cap">Casino table</span>
-              <h2>Quarto Royale</h2>
-            </div>
-          </div>
-
-          <div className="game-settings">
-            <div className="game-settings-list">
-              <div className="game-settings-menu">
-                <button
-                  type="button"
-                  className={`game-settings-chip ${isAiMode ? 'is-interactive' : ''}`}
-                  onClick={() => {
-                    if (isAiMode) {
-                      setOpenSettingsMenu((current) => current === 'difficulty' ? null : 'difficulty');
-                    }
-                  }}
-                  disabled={!isAiMode}
-                >
-                  {isAiMode ? <HeaderDifficultyIcon difficulty={resolvedSettings.aiDifficulty} /> : <HeaderModeIcon />}
-                  <span>{modeChipLabel}</span>
-                </button>
-                {isAiMode && openSettingsMenu === 'difficulty' && (
-                  <div className="game-settings-dropdown">
-                    {(['easy', 'medium', 'hard', 'adaptive'] as const).map((difficulty) => (
-                      <button
-                        key={difficulty}
-                        type="button"
-                        className={`game-settings-option ${resolvedSettings.aiDifficulty === difficulty ? 'is-active' : ''}`}
-                        onClick={() => updateSettings({ aiDifficulty: difficulty })}
-                      >
-                        <HeaderDifficultyIcon difficulty={difficulty} />
-                        {difficulty === 'adaptive' ? 'учится' : difficulty}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="game-settings-menu">
-                <button
-                  type="button"
-                  className="game-settings-chip is-interactive"
-                  onClick={() => setOpenSettingsMenu((current) => current === 'rules' ? null : 'rules')}
-                >
-                  {resolvedSettings.allowSquareWin ? <HeaderRulesHardcoreIcon /> : <HeaderRulesClassicIcon />}
-                  <span>{rulesChipLabel}</span>
-                </button>
-                {openSettingsMenu === 'rules' && (
-                  <div className="game-settings-dropdown">
-                    <button
-                      type="button"
-                      className={`game-settings-option ${resolvedSettings.allowSquareWin ? 'is-active' : ''}`}
-                      onClick={() => updateSettings({ allowSquareWin: true })}
-                    >
-                      Линии + квадрат 2x2
-                    </button>
-                    <button
-                      type="button"
-                      className={`game-settings-option ${!resolvedSettings.allowSquareWin ? 'is-active' : ''}`}
-                      onClick={() => updateSettings({ allowSquareWin: false })}
-                    >
-                      Только линии
-                    </button>
-                  </div>
-                )}
-              </div>
-              <span className="game-settings-chip game-time-chip">
-                <HeaderClockIcon />
-                <span>{elapsedLabel}</span>
-              </span>
-              {isQuickMode && (
-                <span className={`game-settings-chip game-time-chip ${quickTurnRemainingMs <= 5000 ? 'is-warning' : ''}`}>
-                  <HeaderClockIcon />
-                  <span>{turnPlayer === 1 && phase !== 'gameOver' ? quickTurnLabel : 'ожидание'}</span>
-                </span>
-              )}
-              <span className="game-settings-chip">
-                <HeaderPiecesIcon />
-                <span>{availablePieces.length}</span>
-              </span>
-            </div>
-          </div>
-        </header>
-
-        <section className={`game-status ${phase === 'gameOver' ? 'is-game-over' : ''} is-${statusTone}`}>
-          <div className="game-status-copy" key={`${statusBadge}-${statusTitle}-${statusHint}`}>
-            <div className="game-status-badge">{statusBadge}</div>
-            <div className={`game-status-title ${shouldPulseStatusTitle ? 'is-pulsing' : ''}`}>{statusTitle}</div>
-            <div className="game-status-hint">{statusHint}</div>
-            {isAiThinking && (
-              <div className="game-status-loader" aria-live="polite">
-                <span className="game-status-spinner" aria-hidden="true" />
-                <span>ИИ думает...</span>
-              </div>
-            )}
-          </div>
-          <div className="game-status-actions">
-            <div className="game-turn-indicator" aria-label="Текущий игрок">
-              {participants.map((participant) => {
-                const isActive = phase !== 'gameOver' && turnPlayer === participant.id;
-                const isWinner = phase === 'gameOver' && winner === participant.id;
-
-                return (
-                  <div
-                    key={participant.id}
-                    className={`game-turn-avatar ${isActive ? 'is-active' : ''} ${isWinner ? 'is-winner' : ''}`}
-                  >
-                    <div className="game-turn-avatar-mark">
-                      {participant.id === 1 && playerProfile.avatarBase64 ? (
-                        <img src={playerProfile.avatarBase64} alt={participant.label} className="game-turn-avatar-image" />
-                      ) : (
-                        participant.icon
-                      )}
-                    </div>
-                    <span>{participant.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="game-active-piece">
-              <div
-                key={`active-piece-${activePiece?.id ?? 'empty'}-${phase}-${turnPlayer}`}
-                draggable={Boolean(activePiece && phase === 'placePiece' && (!isAiMode || turnPlayer === 1))}
-                onDragStart={() => {
-                  if (activePiece) {
-                    setDraggedPieceId(activePiece.id);
-                  }
-                }}
-                onDragEnd={() => setDraggedPieceId(null)}
-                className={`game-active-chip game-active-animated ${
-                  activePiece && phase === 'placePiece' && (!isAiMode || turnPlayer === 1) ? 'is-draggable' : ''
-                } ${!activePiece ? 'is-empty' : ''}`}
-              >
-                {activePiece ? (
-                  <PieceComponent piece={activePiece} size="large" variant={playerProfile.pieceSet} />
-                ) : (
-                  <span className="game-active-plus">+</span>
-                )}
-              </div>
-              <p className={!activePiece ? 'is-placeholder' : ''}>
-                {activePiece ? pieceLabel(activePiece) : 'Выбранная фигура'}
-              </p>
-            </div>
-          </div>
-        </section>
+        <GameTopbar
+          tableNumber={tableNumber}
+          isAiMode={isAiMode}
+          isQuickMode={isQuickMode}
+          openSettingsMenu={openSettingsMenu}
+          setOpenSettingsMenu={setOpenSettingsMenu}
+          resolvedSettings={resolvedSettings}
+          modeChipLabel={modeChipLabel}
+          rulesChipLabel={rulesChipLabel}
+          elapsedLabel={elapsedLabel}
+          quickTurnRemainingMs={quickTurnRemainingMs}
+          quickTurnLabel={turnPlayer === 1 && phase !== 'gameOver' ? quickTurnLabel : 'ожидание'}
+          availablePiecesCount={availablePieces.length}
+          updateSettings={updateSettings}
+        />
 
         <section className="game-main">
-          <aside className="game-reserve">
-            <div className="game-section-head game-section-head-reserve">
-              <div className="game-section-title game-section-title-reserve">
-                <h3>Резерв</h3>
-                <span className="game-section-meta">{availablePieces.length} фигур</span>
-              </div>
-              <div className="game-reserve-controls">
-                <label className="game-toggle" title="Скрывать уже использованные фигуры">
-                    <input
-                      type="checkbox"
-                      checked={!showUsedPieces}
-                      onChange={(event) => {
-                        const nextShowUsedPieces = !event.target.checked;
-                        if (nextShowUsedPieces) {
-                          setExitingReservePieceIds([]);
-                        } else {
-                          const hiddenIds = initialPieces
-                            .filter((piece) => !availablePieceIds.has(piece.id))
-                            .map((piece) => piece.id);
-                          setExitingReservePieceIds(hiddenIds);
-                        }
-                        setShowUsedPieces(nextShowUsedPieces);
-                      }}
-                    />
-                  <span>Скрыть выбывшие</span>
-                </label>
+          <ReservePanel
+            reservePanelRef={reservePanelRef}
+            mobileFocusZone={mobileFocusZone}
+            availablePiecesCount={availablePieces.length}
+            showUsedPieces={showUsedPieces}
+            setShowUsedPieces={setShowUsedPieces}
+            initialPieces={initialPieces}
+            availablePieceIds={availablePieceIds}
+            setExitingReservePieceIds={setExitingReservePieceIds}
+            reserveSort={reserveSort}
+            reserveSortLabels={reserveSortLabels}
+            openReserveMenu={openReserveMenu}
+            setOpenReserveMenu={setOpenReserveMenu}
+            setReserveSort={setReserveSort}
+            reserveFilterMeta={reserveFilterMeta}
+            reserveFilters={reserveFilters}
+            cycleReserveFilter={cycleReserveFilter}
+            reservePieces={reservePieces}
+            handleReserveSelect={handleReserveSelect}
+            isAiMode={isAiMode}
+            phase={phase}
+            turnPlayer={turnPlayer}
+            tutorialTargetPieceId={tutorialTargetPieceId}
+            pickedReservePieceId={pickedReservePieceId}
+            pickedReserveActor={pickedReserveActor}
+            aiReserveHoverId={aiReserveHoverId}
+            exitingReservePieceIdSet={exitingReservePieceIdSet}
+            playerPieceSet={playerProfile.pieceSet}
+          />
 
-                <div className="game-settings-menu">
-                  <button
-                    type="button"
-                    className="game-settings-chip is-interactive"
-                    onClick={() => setOpenReserveMenu((current) => current === 'sort' ? null : 'sort')}
-                  >
-                    {reserveSortLabels[reserveSort]}
-                  </button>
-                  {openReserveMenu === 'sort' && (
-                    <div className="game-settings-dropdown reserve-dropdown">
-                      {(Object.keys(reserveSortLabels) as ReserveSortKey[]).map((sortKey) => (
-                        <button
-                          key={sortKey}
-                          type="button"
-                          className={`game-settings-option ${reserveSort === sortKey ? 'is-active' : ''}`}
-                          onClick={() => {
-                            setReserveSort(sortKey);
-                            setOpenReserveMenu(null);
-                          }}
-                        >
-                          {reserveSortLabels[sortKey]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="game-reserve-filter-strip" aria-label="Фильтры резерва">
-                {(Object.keys(reserveFilterMeta) as Array<keyof ReserveFilters>).map((filterKey) => {
-                  const meta = reserveFilterMeta[filterKey];
-                  const currentValue = reserveFilters[filterKey];
-                  const isActive = currentValue !== 'all';
-                  const icon = (() => {
-                    if (filterKey === 'color') {
-                      return (
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" />
-                          <path d="M12 3v18" />
-                        </svg>
-                      );
-                    }
-
-                    if (filterKey === 'size') {
-                      return (
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M6 15V9" />
-                          <path d="M18 19V5" />
-                          <path d="M4 9h4" />
-                          <path d="M16 5h4" />
-                          <path d="M4 15h4" />
-                          <path d="M16 19h4" />
-                        </svg>
-                      );
-                    }
-
-                    if (filterKey === 'shape') {
-                      return (
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <circle cx="8" cy="12" r="3.25" />
-                          <rect x="13" y="8.5" width="6.5" height="6.5" rx="1.2" />
-                        </svg>
-                      );
-                    }
-
-                    return (
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <ellipse cx="12" cy="12" rx="6.5" ry="4.5" />
-                        <ellipse cx="12" cy="12" rx="2.4" ry="1.7" />
-                      </svg>
-                    );
-                  })();
-
-                  return (
-                    <button
-                      key={filterKey}
-                      type="button"
-                      className={`game-reserve-filter-toggle ${isActive ? 'is-active' : ''}`}
-                      title={`${meta.label}: ${meta.states[currentValue]}`}
-                      onClick={() => cycleReserveFilter(filterKey)}
-                    >
-                      <span className="game-reserve-filter-icon">{icon}</span>
-                      <span className="game-reserve-filter-copy">
-                        <span className="game-reserve-filter-label">{meta.label}</span>
-                        <strong>{meta.states[currentValue]}</strong>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="game-reserve-grid">
-              {reservePieces.map((piece) => {
-                const isAvailable = availablePieceIds.has(piece.id);
-                const isTemporarilyLocked = phase !== 'selectPiece' || (isAiMode && turnPlayer === 2);
-                const isLocked = !isAvailable || isTemporarilyLocked;
-                const isTutorialTarget = tutorialTargetPieceId === piece.id;
-
-                return (
-                  <button
-                    key={piece.id}
-                    type="button"
-                    onClick={() => handleReserveSelect(piece, isAvailable, isTemporarilyLocked)}
-                    className={`game-reserve-item ${isLocked ? 'is-locked' : ''} ${!isAvailable ? 'is-used' : ''} ${isTutorialTarget ? 'is-tutorial-target' : ''} ${pickedReservePieceId === piece.id ? 'is-picked' : ''} ${pickedReservePieceId === piece.id && pickedReserveActor === 'player' ? 'is-picked-player' : ''} ${pickedReservePieceId === piece.id && pickedReserveActor === 'opponent' ? 'is-picked-opponent' : ''} ${aiReserveHoverId === piece.id ? 'is-ai-hover' : ''} ${aiReserveHoverId === piece.id && turnPlayer === 2 ? 'is-ai-hover-opponent' : ''} ${exitingReservePieceIdSet.has(piece.id) && !showUsedPieces ? 'is-hiding' : ''}`}
-                  >
-                    <span className="game-piece-id">{piece.id}</span>
-                    <div className="game-reserve-piece">
-                      <PieceComponent piece={piece} size="small" variant={playerProfile.pieceSet} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-
-          <main className="game-board-panel">
+          <main
+            ref={boardPanelRef}
+            className={`game-board-panel ${mobileFocusZone === 'reserve' ? 'is-dimmed' : 'is-emphasized'}`}
+          >
             <div className="game-section-head">
               <div className="game-board-head">
                 <h3>Поле</h3>
-                <div className="game-board-mobile-piece" aria-label="Активная фигура">
-                  <div className="game-board-mobile-piece-copy">
-                    <span className="game-board-mobile-piece-label">Активная фигура</span>
-                    <strong className={!activePiece ? 'is-placeholder' : ''}>
-                      {activePiece ? pieceLabel(activePiece) : 'Ожидание фигуры'}
-                    </strong>
-                  </div>
-                  <div
-                    className={`game-board-mobile-piece-chip ${
-                      activePiece && phase === 'placePiece' && (!isAiMode || turnPlayer === 1) ? 'is-draggable' : ''
-                    } ${!activePiece ? 'is-empty' : ''}`}
-                  >
-                    {activePiece ? (
-                      <PieceComponent piece={activePiece} size="small" variant={playerProfile.pieceSet} />
-                    ) : (
-                      <span className="game-active-plus">+</span>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
             <div className={`game-board-surface ${isAiThinking ? 'is-waiting' : ''}`}>
-              {boardTurnLabel && (
-                <div className={`game-board-turn-banner ${turnPlayer === 1 ? 'is-player' : 'is-opponent'}`}>
-                  {boardTurnLabel}
+              {boardTurnLabel && boardActionTitle && boardActionHint && (
+                <div className={`game-board-action-bar ${turnPlayer === 1 ? 'is-player' : 'is-opponent'}`}>
+                  <span className={`game-board-action-badge ${turnPlayer === 1 ? 'is-player' : 'is-opponent'}`}>
+                    {boardTurnLabel}
+                  </span>
+                  <div className="game-board-action-body">
+                    <div className="game-board-action-copy">
+                      <strong>{boardActionTitle}</strong>
+                      <p className={!activePiece && phase === 'placePiece' ? 'is-placeholder' : ''}>{boardActionHint}</p>
+                      {isAiThinking && (
+                        <div className="game-status-loader" aria-live="polite">
+                          <span className="game-status-spinner" aria-hidden="true" />
+                          <span>ИИ думает...</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="game-board-action-actors" aria-label="Участники партии">
+                      {actionParticipants.map((participant) => {
+                        const isActive = phase !== 'gameOver' && turnPlayer === participant.id;
+                        const isWinner = phase === 'gameOver' && winner === participant.id;
+
+                        return (
+                          <div
+                            key={participant.id}
+                            className={`game-turn-avatar ${isActive ? 'is-active' : ''} ${isWinner ? 'is-winner' : ''}`}
+                          >
+                            <div className="game-turn-avatar-mark">
+                              {participant.id === 1 && playerProfile.avatarBase64 ? (
+                                <img src={playerProfile.avatarBase64} alt={participant.label} className="game-turn-avatar-image" />
+                              ) : participant.icon === 'robot' ? (
+                                <RobotAvatar />
+                              ) : (
+                                participant.icon
+                              )}
+                            </div>
+                            <span>{participant.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="game-board-action-piece" aria-label="Активная фигура">
+                      <div className={`game-board-action-piece-chip ${!activePiece ? 'is-empty' : ''}`}>
+                        {activePiece ? (
+                          <PieceComponent piece={activePiece} size="small" variant={playerProfile.pieceSet} />
+                        ) : (
+                          <span className="game-active-plus">+</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {winningAttributeLabels.length > 0 && (
